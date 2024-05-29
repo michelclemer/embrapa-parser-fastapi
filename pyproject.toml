@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "ambrapa-teste"
+version = "0.1.0"
+description = ""
+authors = ["Michel Clemer Monteiro Deolino <michelclemermonteirodeolino@gmial.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.111.0"
+sqlmodel = "^0.0.18"
+alembic = "^1.13.1"
+pydantic-settings = "^2.2.1"
+python-dotenv = "^1.0.1"
+psycopg2-binary = "^2.9.9"
+psycopg2 = "^2.9.9"
+dependency-injector = "^4.41.0"
+apscheduler = "^3.10.4"
+requests = "^2.32.2"
+pandas = "^2.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

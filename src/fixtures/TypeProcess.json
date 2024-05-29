@@ -1,0 +1,22 @@
+[
+	{
+		"id" : 1,
+		"type_name" : "viniferas",
+		"description" : "Viníferas"
+	},
+	{
+		"id" : 2,
+		"type_name" : "americanas_hibridas",
+		"description" : "Americanas e Hibridas"
+	},
+	{
+		"id" : 3,
+		"type_name" : "uvas_mesa",
+		"description" : "Uvas de Mesa"
+	},
+	{
+		"id" : 4,
+		"type_name" : "sem_classificacao",
+		"description" : "Sem Classificacao"
+	}
+]

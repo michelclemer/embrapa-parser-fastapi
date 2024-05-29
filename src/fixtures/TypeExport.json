@@ -1,0 +1,23 @@
+[
+    {
+        "id" : 1,
+        "type_name" :"vinhos_mesa",
+        "description" : "Vinhos de Mesa"
+	},
+	{
+		"id" : 2,
+		"type_name" : "espumantes",
+		"description" : "Espumantes"
+	},
+	{
+		"id" : 3,
+		"type_name" : "uvas_frescas",
+		"description" : "Uvas Frescas"
+	},
+	{
+		"id" : 4,
+		"type_name" : "suco_uva",
+		"description" : "Suco de Uva"
+	}
+
+]
