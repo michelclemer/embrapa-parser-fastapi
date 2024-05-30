@@ -1,6 +1,7 @@
 import datetime
 import requests
 import pandas as pd
+from pandas.api.types import is_number
 from io import StringIO
 from sqlmodel import SQLModel, Session, create_engine, select
 from src.infra.settings import settings
@@ -147,6 +148,7 @@ class ScrapingServices:
 class HandelDB:
     def __init__(self):
         self.scraping = ScrapingServices()
+        print(settings.SQLALCHEMY_DATABASE_URI)
         self.engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
     def __getet_years(self, df):
@@ -166,8 +168,8 @@ class HandelDB:
                 for year in years:
                     new_row = default.copy()
                     new_row["year"] = year
-                    new_row["quantity_liters"] = row[year]
-                    query = select(ProductionModel).where(ProductionModel.id_product == new_row["id_product"], ProductionModel.year == new_row["year"])
+                    new_row["quantity_liters"] = self.__quantity_kg(row, year)
+                    query = select(ProductionModel).where(ProductionModel.id_product == new_row["id_product"], ProductionModel.year == new_row["year"], ProductionModel.control_label == new_row["control_label"])
                     if not session.exec(query).first():
                         item = ProductionModel(**new_row)
                         session.add(item)
@@ -175,7 +177,7 @@ class HandelDB:
 
     def __quantity_kg(self, row, year) -> int:
         print(row[year], type(row[year]))
-        if not pd.isna(row[year]):
+        if is_number(row[year]):
             return row[year]
         return 0
 
@@ -185,7 +187,7 @@ class HandelDB:
         with Session(self.engine) as session:
             for index, row in df.iterrows():
                 default = {
-                    "id_process": row["id"],
+                    "id_product": row["id"],
                     "control_label": row["control"],
                     "cultivar_name": row["cultivar"],
                     "type_process_id": 1
@@ -194,51 +196,330 @@ class HandelDB:
                     new_row = default.copy()
                     new_row["year"] = year
                     new_row["quantity_kg"] = self.__quantity_kg(row, year)
-                    query = select(ProcessProductModel).where(ProcessProductModel.id_process == new_row["id_process"], ProcessProductModel.year == new_row["year"])
+                    query = select(ProcessProductModel).where(ProcessProductModel.id_product == new_row["id_product"], ProcessProductModel.year == new_row["year"], ProcessProductModel.control_label == new_row["control_label"])
                     if not session.exec(query).first():
                         item = ProcessProductModel(**new_row)
                         session.add(item)
             session.commit()
 
     def insert_processamento_americanas(self):
-        pass
+        df = self.scraping.handle_processamento_americanas_data()
+        years = self.__getet_years(df)
+        with Session(self.engine) as session:
+            for index, row in df.iterrows():
+                default = {
+                    "id_product": row["id"],
+                    "control_label": row["control"],
+                    "cultivar_name": row["cultivar"],
+                    "type_process_id": 2
+                }
+                for year in years:
+                    new_row = default.copy()
+                    new_row["year"] = year
+                    new_row["quantity_kg"] = self.__quantity_kg(row, year)
+                    query = select(ProcessProductModel).where(ProcessProductModel.id_product == new_row["id_product"], ProcessProductModel.year == new_row["year"], ProcessProductModel.control_label == new_row["control_label"])
+                    if not session.exec(query).first():
+                        item = ProcessProductModel(**new_row)
+                        session.add(item)
+            session.commit()
 
     def insert_processamento_uva_mesa(self):
-        pass
+        df = self.scraping.handle_processamento_uva_mesa_data()
+        years = self.__getet_years(df)
+        with Session(self.engine) as session:
+            for index, row in df.iterrows():
+                default = {
+                    "id_product": row["id"],
+                    "control_label": row["control"],
+                    "cultivar_name": row["cultivar"],
+                    "type_process_id": 3
+                }
+                for year in years:
+                    new_row = default.copy()
+                    new_row["year"] = year
+                    new_row["quantity_kg"] = self.__quantity_kg(row, year)
+                    query = select(ProcessProductModel).where(
+                        ProcessProductModel.id_product == new_row["id_product"], ProcessProductModel.year == new_row["year"], ProcessProductModel.control_label == new_row["control_label"])
+                    if not session.exec(query).first():
+                        item = ProcessProductModel(**new_row)
+                        session.add(item)
+            session.commit()
 
-    def insert_sem_classificacao(self):
-        pass
+    def insert_processamento_sem_classificacao(self):
+        df = self.scraping.handle_sem_classificacao_data()
+        years = self.__getet_years(df)
+        with Session(self.engine) as session:
+            for index, row in df.iterrows():
+                default = {
+                    "id_product": row["id"],
+                    "control_label": row["control"],
+                    "cultivar_name": row["cultivar"],
+                    "type_process_id": 4
+                }
+                for year in years:
+                    new_row = default.copy()
+                    new_row["year"] = year
+                    new_row["quantity_kg"] = self.__quantity_kg(row, year)
+                    query = select(ProcessProductModel).where(ProcessProductModel.id_product == new_row["id_product"], ProcessProductModel.year == new_row["year"])
+                    if not session.exec(query).first():
+                        item = ProcessProductModel(**new_row)
+                        session.add(item)
+            session.commit()
 
     def insert_comercializacao(self):
-        pass
+        df = self.scraping.handle_comercializacao_data()
+        years = self.__getet_years(df)
+        with Session(self.engine) as session:
+            for index, row in df.iterrows():
+
+                default = {
+                    "id_product": row["id"],
+                    "control_label": row["control"],
+                }
+                for year in years:
+                    new_row = default.copy()
+                    new_row["year"] = year
+                    new_row["quantity_liters"] = self.__quantity_kg(row, year)
+                    try:
+                        query = select(ComercializationModel).where(ComercializationModel.id_product == new_row["id_product"],
+                                                                  ComercializationModel.year == new_row["year"], ComercializationModel.control_label == new_row["control_label"])
+                        print(row)
+                        if not session.exec(query).first():
+                            item = ComercializationModel(**new_row)
+                            session.add(item)
+                    except:
+                        pass
+            session.commit()
 
     def insert_importacao_vinhos_mesa(self):
-        pass
+        df = self.scraping.handle_importacao_vinhos_mesa_data()
+        years = self.__getet_years(df)
+        with Session(self.engine) as session:
+            for index, row in df.iterrows():
+                default = {
+                    "id_product": row["Id"],
+                    "country_origin": row["País"],
+                    "type_import_id": 1
+                }
+                for year in years:
+                    new_row = default.copy()
+                    new_row["year"] = year
+                    new_row["quantity_kg"] = self.__quantity_kg(row, year)
+                    new_row["price_uss"] = f'{row[year]}.1'
+                    query = select(ImportModel).where(ImportModel.id_product == new_row["id_product"],
+                                                              ImportModel.year == new_row["year"], ImportModel.type_import_id == new_row["type_import_id"])
+                    if not session.exec(query).first():
+                        item = ImportModel(**new_row)
+                        session.add(item)
+            session.commit()
 
     def insert_importacao_vinhos_espumante(self):
-        pass
+        df = self.scraping.handle_importacao_vinhos_espumante_data()
+        years = self.__getet_years(df)
+        with Session(self.engine) as session:
+            for index, row in df.iterrows():
+                default = {
+                    "id_product": row["Id"],
+                    "country_origin": row["País"],
+                    "type_import_id": 2
+                }
+                for year in years:
+                    new_row = default.copy()
+                    new_row["year"] = year
+                    new_row["quantity_kg"] = self.__quantity_kg(row, year)
+                    new_row["price_uss"] = f'{row[year]}.1'
+                    query = select(ImportModel).where(ImportModel.id_product == new_row["id_product"],
+                                                              ImportModel.year == new_row["year"], ImportModel.type_import_id == new_row["type_import_id"])
+                    if not session.exec(query).first():
+                        item = ImportModel(**new_row)
+                        session.add(item)
+            session.commit()
 
     def insert_importacao_uva_fresca(self):
-        pass
+        df = self.scraping.handle_importacao_uva_fresca_data()
+        years = self.__getet_years(df)
+        with Session(self.engine) as session:
+            for index, row in df.iterrows():
+                default = {
+                    "id_product": row["Id"],
+                    "country_origin": row["País"],
+                    "type_import_id": 3
+                }
+                for year in years:
+                    new_row = default.copy()
+                    new_row["year"] = year
+                    new_row["quantity_kg"] = self.__quantity_kg(row, year)
+                    new_row["price_uss"] = f'{row[year]}.1'
+                    query = select(ImportModel).where(ImportModel.id_product == new_row["id_product"],
+                                                              ImportModel.year == new_row["year"], ImportModel.country_origin == new_row["country_origin"])
+                    if not session.exec(query).first():
+                        item = ImportModel(**new_row)
+                        session.add(item)
+            session.commit()
 
     def insert_importacao_uva_passas(self):
-        pass
+        df = self.scraping.handle_importacao_uva_passas_data()
+        years = self.__getet_years(df)
+        with Session(self.engine) as session:
+            for index, row in df.iterrows():
+                default = {
+                    "id_product": row["Id"],
+                    "country_origin": row["País"],
+                    "type_import_id": 4
+                }
+                for year in years:
+                    new_row = default.copy()
+                    new_row["year"] = year
+                    new_row["quantity_kg"] = self.__quantity_kg(row, year)
+                    new_row["price_uss"] = f'{row[year]}.1'
+                    query = select(ImportModel).where(ImportModel.id_product == new_row["id_product"],
+                                                              ImportModel.year == new_row["year"], ImportModel.country_origin == new_row["country_origin"])
+                    if not session.exec(query).first():
+                        item = ImportModel(**new_row)
+                        session.add(item)
+            session.commit()
 
     def insert_importacao_suco_uva(self):
-        pass
+        df = self.scraping.handle_importacao_suco_uva_data()
+        years = self.__getet_years(df)
+        with Session(self.engine) as session:
+            for index, row in df.iterrows():
+                default = {
+                    "id_product": row["Id"],
+                    "country_origin": row["País"],
+                    "type_import_id": 5
+                }
+                for year in years:
+                    new_row = default.copy()
+                    new_row["year"] = year
+                    new_row["quantity_kg"] = self.__quantity_kg(row, year)
+                    new_row["price_uss"] = f'{row[year]}.1'
+                    query = select(ImportModel).where(ImportModel.id_product == new_row["id_product"],
+                                                              ImportModel.year == new_row["year"], ImportModel.country_origin == new_row["country_origin"])
+                    if not session.exec(query).first():
+                        item = ImportModel(**new_row)
+                        session.add(item)
+            session.commit()
 
     def insert_exportacao_vinhos_mesa(self):
-        pass
+        df = self.scraping.handle_exportacao_vinhos_mesa_data()
+        years = self.__getet_years(df)
+        with Session(self.engine) as session:
+            for index, row in df.iterrows():
+                default = {
+                    "id_product": row["Id"],
+                    "country_origin": row["País"],
+                    "type_export_id": 1
+                }
+                for year in years:
+                    new_row = default.copy()
+                    new_row["year"] = year
+                    new_row["quantity_kg"] = self.__quantity_kg(row, year)
+                    new_row["price_uss"] = f'{row[year]}.1'
+                    query = select(ExportModel).where(ExportModel.id_product == new_row["id_product"],
+                                                              ExportModel.year == new_row["year"], ExportModel.type_export_id == new_row["type_export_id"])
+                    if not session.exec(query).first():
+                        item = ExportModel(**new_row)
+                        session.add(item)
+            session.commit()
 
     def insert_exportacao_vinhos_espumante(self):
-        pass
+        df = self.scraping.handle_exportacao_vinhos_espumante_data()
+        years = self.__getet_years(df)
+        with Session(self.engine) as session:
+            for index, row in df.iterrows():
+                default = {
+                    "id_product": row["Id"],
+                    "country_origin": row["País"],
+                    "type_export_id": 2
+                }
+                for year in years:
+                    new_row = default.copy()
+                    new_row["year"] = year
+                    new_row["quantity_kg"] = self.__quantity_kg(row, year)
+                    new_row["price_uss"] = f'{row[year]}.1'
+                    query = select(ExportModel).where(ExportModel.id_product == new_row["id_product"],
+                                                              ExportModel.year == new_row["year"], ExportModel.type_export_id == new_row["type_export_id"])
+                    if not session.exec(query).first():
+                        item = ExportModel(**new_row)
+                        session.add(item)
+            session.commit()
 
     def insert_exportacao_uva_fresca(self):
-        pass
+        df = self.scraping.handle_exportacao_uva_fresca_data()
+        years = self.__getet_years(df)
+        with Session(self.engine) as session:
+            for index, row in df.iterrows():
+                default = {
+                    "id_product": row["Id"],
+                    "country_origin": row["País"],
+                    "type_export_id": 3
+                }
+                for year in years:
+                    new_row = default.copy()
+                    new_row["year"] = year
+                    new_row["quantity_kg"] = self.__quantity_kg(row, year)
+                    new_row["price_uss"] = f'{row[year]}.1'
+                    if str(new_row['price_uss']).startswith('0.0.'):
+                        new_row['price_uss'] = f'0.0{str(new_row["price_uss"])[2:]}'
+                    try:
+                        query = select(ExportModel).where(ExportModel.id_product == new_row["id_product"],
+                                                          ExportModel.year == new_row["year"],
+                                                          ExportModel.type_export_id == new_row["type_export_id"])
+                        if not session.exec(query).first():
+                            item = ExportModel(**new_row)
+                            session.add(item)
+                    except:
+                        pass
+            try:
+                session.commit()
+            except:
+                pass
 
     def insert_exportacao_suco_uva(self):
-        pass
+        df = self.scraping.handle_exportacao_suco_uva_data()
+        years = self.__getet_years(df)
+        with Session(self.engine) as session:
+            for index, row in df.iterrows():
+                default = {
+                    "id_product": row["Id"],
+                    "country_origin": row["País"],
+                    "type_export_id": 4
+                }
+                for year in years:
+                    new_row = default.copy()
+                    new_row["year"] = year
+                    new_row["quantity_kg"] = self.__quantity_kg(row, year)
+                    new_row["price_uss"] = f'{row[year]}.1'
+                    try:
+                        query = select(ExportModel).where(ExportModel.id_product == new_row["id_product"],
+                                                          ExportModel.year == new_row["year"],
+                                                          ExportModel.type_export_id == new_row["type_export_id"])
+                        if not session.exec(query).first():
+                            item = ExportModel(**new_row)
+                            session.add(item)
+                    except:
+                        pass
+            session.commit()
 
 
-teste = HandelDB()
-teste.insert_processamento_viniferas()
+    def insert_all(self):
+        self.insert_producao()
+        self.insert_processamento_viniferas()
+        self.insert_processamento_americanas()
+        self.insert_processamento_uva_mesa()
+        self.insert_processamento_sem_classificacao()
+        self.insert_comercializacao()
+        self.insert_importacao_vinhos_mesa()
+        self.insert_importacao_vinhos_espumante()
+        self.insert_importacao_uva_fresca()
+        self.insert_importacao_uva_passas()
+        self.insert_importacao_suco_uva()
+        self.insert_exportacao_vinhos_mesa()
+        self.insert_exportacao_vinhos_espumante()
+        self.insert_exportacao_uva_fresca()
+        self.insert_exportacao_suco_uva()
+        print("All data inserted")
+
+
+insert_data = HandelDB()

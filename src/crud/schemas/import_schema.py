@@ -8,7 +8,7 @@ from datetime import datetime
 
 class BaseImport(BaseModel):
     id: Optional[int] = Field(default=None)
-    control_label: Optional[str] = Field(default=None)
+    id_product: Optional[int] = Field(default=None)
     year: Optional[int] = Field(default=None)
     quantity_kg: Optional[int] = Field(default=None)
     price_uss: Optional[float] = Field(default=None)
@@ -21,8 +21,8 @@ class Import(BaseModel):  # Inherits from BaseImport
 
 class FindImport(BaseModel):
     id: Optional[int] = Field(default=None)
-    control_label: Optional[str] = Field(default=None)
     year: Optional[int] = Field(default=None)
+    id_product: Optional[int] = Field(default=None)
     quantity_kg: Optional[int] = Field(default=None)
     price_uss: Optional[float] = Field(default=None)
     type_import_id: Optional[int] = Field(default=None)

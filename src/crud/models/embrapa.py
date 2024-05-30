@@ -5,7 +5,7 @@ from datetime import datetime
 class ProductionModel(SQLModel, table=True):
     __tablename__ = "production"
     id: int = Field(primary_key=True, index=True)
-    id_product: int = Field(sa_column=Column(Integer, primary_key=True))
+    id_product: int = Field(sa_column=Column(Integer))
     control_label: str = Field(sa_column=Column(String, index=True))
     production_name: str = Field(sa_column=Column(String, index=True))
     year: int = Field(sa_column=Column(Integer))
@@ -39,7 +39,7 @@ class TypeExportModel(SQLModel, table=True):
 class ProcessProductModel(SQLModel, table=True):
     __tablename__ = "process_product"
     id: int = Field(primary_key=True, index=True)
-    id_process: int = Field(sa_column=Column(Integer, primary_key=True))
+    id_product: int = Field(sa_column=Column(Integer))
     control_label: str = Field(sa_column=Column(String, index=True))
     cultivar_name: str = Field(sa_column=Column(String, index=True))
     year: int = Field(sa_column=Column(Integer))
@@ -52,11 +52,10 @@ class ProcessProductModel(SQLModel, table=True):
 class ComercializationModel(SQLModel, table=True):
     __tablename__ = "comercialization"
     id: int = Field(primary_key=True, index=True)
+    id_product: int = Field(sa_column=Column(Integer))
     control_label: str = Field(sa_column=Column(String, index=True))
     year: int = Field(sa_column=Column(Integer))
-    quantity_kg: int = Field(sa_column=Column(Integer))
     quantity_liters: int = Field(sa_column=Column(Integer))
-    process_product_id: int = Field(sa_column=Column(Integer, ForeignKey("process_product.id")))
     created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), default=func.now()))
     updated_at: datetime = Field(sa_column=Column(DateTime(timezone=True), default=func.now(), onupdate=func.now()))
 
@@ -64,7 +63,8 @@ class ComercializationModel(SQLModel, table=True):
 class ImportModel(SQLModel, table=True):
     __tablename__ = "import"
     id: int = Field(primary_key=True, index=True)
-    control_label: str = Field(sa_column=Column(String, index=True))
+    id_product: int = Field(sa_column=Column(Integer))
+    country_origin: str = Field(sa_column=Column(String, index=True))
     year: int = Field(sa_column=Column(Integer))
     quantity_kg: int = Field(sa_column=Column(Integer))
     price_uss: float = Field(sa_column=Column(Integer))
@@ -75,7 +75,7 @@ class ImportModel(SQLModel, table=True):
 class ExportModel(SQLModel, table=True):
     __tablename__ = "export"
     id: int = Field(primary_key=True, index=True)
-    control_label: str = Field(sa_column=Column(String, index=True))
+    id_product: int = Field(sa_column=Column(Integer))
     year: int = Field(sa_column=Column(Integer))
     quantity_kg: int = Field(sa_column=Column(Integer))
     price_uss: float = Field(sa_column=Column(Integer))

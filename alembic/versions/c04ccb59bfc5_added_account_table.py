@@ -57,7 +57,7 @@ def upgrade():
 
     op.create_table('process_product',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('id_process', sa.Integer(), nullable=False),
+        sa.Column('id_product', sa.Integer(), nullable=False),
         sa.Column('control_label', sa.String(), nullable=False),
         sa.Column('cultivar_name', sa.String(), nullable=False),
         sa.Column('year', sa.Integer(), nullable=False),
@@ -72,20 +72,19 @@ def upgrade():
     op.create_table('comercialization',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('control_label', sa.String(), nullable=False),
+        sa.Column('id_product', sa.Integer(), nullable=False),
         sa.Column('year', sa.Integer(), nullable=False),
-        sa.Column('quantity_kg', sa.Integer(), nullable=False),
         sa.Column('quantity_liters', sa.Integer(), nullable=False),
-        sa.Column('process_product_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
-        sa.ForeignKeyConstraint(['process_product_id'], ['process_product.id']),
         sa.PrimaryKeyConstraint('id')
     )
 
     op.create_table('import',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('control_label', sa.String(), nullable=False),
+        sa.Column('id_product', sa.Integer(), nullable=False),
         sa.Column('year', sa.Integer(), nullable=False),
+        sa.Column('country_origin', sa.String(), nullable=False),
         sa.Column('quantity_kg', sa.Integer(), nullable=False),
         sa.Column('price_uss', sa.Float(), nullable=False),
         sa.Column('type_import_id', sa.Integer(), nullable=False),
@@ -97,7 +96,7 @@ def upgrade():
 
     op.create_table('export',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('control_label', sa.String(), nullable=False),
+        sa.Column('id_product', sa.Integer(), nullable=False),
         sa.Column('year', sa.Integer(), nullable=False),
         sa.Column('quantity_kg', sa.Integer(), nullable=False),
         sa.Column('price_uss', sa.Float(), nullable=False),
